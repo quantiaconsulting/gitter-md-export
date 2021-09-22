@@ -12,6 +12,7 @@ var port          = process.env.PORT || 7000;
 // Client OAuth configuration
 var clientId      = process.env.GITTER_KEY;
 var clientSecret  = process.env.GITTER_SECRET;
+var messageStartID = process.env.MESSAGE_START_ID;
 
 // Gitter API client helper
 var gitter = {
@@ -47,9 +48,9 @@ var gitter = {
   },
 
   fetchMessages: function(room, token, cb) {
-    // /v1/rooms/:roomId/chatMessages?limit=50
+    // https://developer.gitter.im/docs/messages-resource 6142f65cf428f97a9f8b84bc
 
-    this.fetch('/api/v1/rooms/' + room + '/chatMessages?limit=100', token, function(err, messages) {
+    this.fetch('/api/v1/rooms/' + room + '/chatMessages?limit=100&afterId='+ messageStartID, token, function(err, messages) {
       cb(err, messages);
     });
   }
@@ -144,14 +145,32 @@ app.get('/room/*', function(req, res) {
     if (err) return res.send(500);
 
     var return_string = "";
+    var fromUser_name_old = "";
+    var first_msg = true;
 
     var i;
     for (i in messages) {
       var msg = messages[i];
-      return_string += "---\n\n## " 
-                    + msg.fromUser.displayName
-                    + " *" + msg.sent + "*: \n\n"
-                    + msg.text + "\n\n";
+
+      if (fromUser_name_old != msg.fromUser.displayName){
+        if (!first_msg){
+          return_string += "---\n\n## " 
+                        + msg.fromUser.displayName
+                        + " *" + msg.sent + "*: \n\n"
+                        + msg.text + "\n\n\n\n";
+        } else {
+          return_string += "## " 
+                        + msg.fromUser.displayName
+                        + " *" + msg.sent + "*: \n\n"
+                        + msg.text + "\n\n\n\n";
+          first_msg = false;
+        }
+      } else {
+        return_string += msg.text + "\n\n\n\n";
+      }
+
+      fromUser_name_old = msg.fromUser.displayName;
+
     }
     res.set('Content-Type', 'text/x-markdown');
 
@@ -170,3 +189,4 @@ app.get('/room/*', function(req, res) {
 
 app.listen(port);
 console.log('Demo app running at http://localhost:' + port);
+
