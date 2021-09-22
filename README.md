@@ -5,7 +5,7 @@ A simple way to export the chat history of a room as markdown. Very crude as sim
 ## HOWTO
 
 1. Create a new app at [https://developer.gitter.im](https://developer.gitter.im). The ```Redirect URL``` should be ```http://localhost:7000/login/callback```
-2. Run `npm install` and `nopm install express`
+2. Run `npm install` and `npm install express`
 3. Get the `MESSAGE_START_ID` from the Gitter UI. Take the one before the messages you want to print
 4. Launch the demo app with:
 
